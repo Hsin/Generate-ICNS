@@ -1,0 +1,79 @@
+// Sketch Plugin: Generate ICNS From Artboards
+// Developer: Nathan Rutzky
+// Version: 1.0.3
+
+var artboard_length = [[[doc currentPage] artboards] length];
+var file_url = [doc fileURL];
+
+if (!file_url) {
+
+	[doc showMessage:"Save the Document Before Proceeding..."];
+	sound_basso();
+}
+
+else if (artboard_length < 2) {
+
+	[doc showMessage:"File ▸ New From Template ▸ Mac App Icon"];
+	sound_basso();
+}
+
+else {
+
+	for (var i=0; i < artboard_length; i++) {
+	
+		var artboard = [[doc currentPage] artboards][i];
+		var artboard_name = [artboard name];
+		
+		if (artboard_name != "Lock") {
+		
+			var file_path = [[doc fileURL] path];
+			var file_folder = file_path.split([doc displayName])[0];
+			var file_name = file_folder + ".icon.iconset/" + artboard_name + ".png";
+	
+			[doc saveArtboardOrSlice:artboard toFile:file_name];
+		}
+	}
+
+	generate_icon(); remove_iconset(); sound_pop();
+	
+	[doc showMessage:"Icon Complete..."];	
+}
+
+function generate_icon() {
+
+	var generate_icon = [[NSTask alloc] init];
+	var generate_path = "find ~/ -name '.icon.iconset' -execdir iconutil -c icns {} -o Icon.icns \\;";
+	
+	[generate_icon setLaunchPath: "/bin/bash"];
+	[generate_icon setArguments: ["-c", generate_path]];
+	[generate_icon launch];
+	[generate_icon waitUntilExit];
+}
+
+function remove_iconset() {
+
+	var remove_iconset = [[NSTask alloc] init];
+	var remove_path = "find ~/ -name '.icon.iconset' -exec rm -r {} \\;";
+	
+	[remove_iconset setLaunchPath: "/bin/bash"];
+	[remove_iconset setArguments: ["-c", remove_path]];
+	[remove_iconset launch];
+}
+
+function sound_pop() {
+
+	var sound_pop = [[NSTask alloc] init];
+	
+	[sound_pop setLaunchPath: "/bin/bash"];
+	[sound_pop setArguments: ["-c", "afplay /System/Library/Sounds/Pop.aiff"]];
+	[sound_pop launch];
+}
+
+function sound_basso() {
+
+	var sound_basso = [[NSTask alloc] init];
+	
+	[sound_basso setLaunchPath: "/bin/bash"];
+	[sound_basso setArguments: ["-c", "afplay /System/Library/Sounds/Basso.aiff"]];
+	[sound_basso launch];	
+}
